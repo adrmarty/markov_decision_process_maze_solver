@@ -189,5 +189,6 @@ for t in range(N):
 
         s += 1
         X_s = X_splus1
-print(Q[4, 2, :])
+
+print(Q[0, 0, :])
 plot_path(maze, Q)
