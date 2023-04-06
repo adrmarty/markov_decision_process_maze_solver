@@ -22,6 +22,9 @@ def shift(position, action):
     
 
 def get_admissible_actions(position):
+    """
+    Cette fonction permet de récupérer les actions admissibles d'un état. On enlèves les actions qui nous font sortir de la grille
+    """
     admissible_actions = actions[:]
     (y, x) = position
     if x == 0:
@@ -63,7 +66,7 @@ def get_path_from_Q(Q, start, end, max_iteration=100):
 
 def plot_maze(maze):
     """
-    Cette fonction permet simplement 
+    Cette fonction permet simplement d'afficher le labyrinthe
     """
     # Define the colors for the maze
     cmap = plt.cm.binary
@@ -89,7 +92,7 @@ def plot_maze(maze):
 
 def plot_path(maze, Q, max_iteration=100):
     """
-    Cette fonction permet d'afficher 
+    Cette fonction permet d'afficher le chemin que l'on obtient en prenant nos décisions à partir de la matrice Q
     """
     # Define the colors for the maze
     cmap = plt.cm.binary
@@ -159,7 +162,7 @@ actions = ["up", "down", "left", "right"]
 Q = np.zeros(shape=(maze.shape[0], maze.shape[1], len(actions)))
 
 N = 1000  # Number of games
-epsilon = 0.9
+epsilon = 0.5
 alpha = 0.6
 gamma = 0.9
 
@@ -186,5 +189,5 @@ for t in range(N):
 
         s += 1
         X_s = X_splus1
-
+print(Q[4, 2, :])
 plot_path(maze, Q)
