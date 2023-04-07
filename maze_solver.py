@@ -178,11 +178,10 @@ actions = ["up", "down", "left", "right"]
 
 Q = np.zeros(shape=(maze.shape[0], maze.shape[1], len(actions)))
 
-N = 500  # Number of games
+N = 1000  # Number of games
 
 epsilon = lambda x: 1 - 1/(x+2)
-epsilon = lambda x: 0.2
-
+epsilon = lambda x: 0.3
 
 alpha = 0.8
 gamma = 0.95
