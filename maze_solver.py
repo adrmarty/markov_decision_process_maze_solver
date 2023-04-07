@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from matplotlib import animation
 
+from maze_generator import generate_maze
 from pprint import pprint
 
 def my_argmax(array):
@@ -119,7 +120,7 @@ def plot_path(maze, Q, max_iteration=200):
     ax.set_yticklabels([])
     ax.tick_params(axis='both', length=0)
 
-    y, x = get_path_from_Q(Q, (4, 0), (0, 4), max_iteration=max_iteration)
+    y, x = get_path_from_Q(Q, start_case, end_case, max_iteration=max_iteration)
 
     x = x-0.5
     y = y-0.5
@@ -149,12 +150,13 @@ def plot_path(maze, Q, max_iteration=200):
 
 def reward(case, action):
     x, y = case
-    if (x, y) == (1, 4 )and action == "up":
-        return 10000
     if maze[x, y] == 1:
         return -10000
+    elif shift(case, action) == end_case:
+        return 10000
     else:
         return 10
+
 
 maze = np.array([
     [0, 0, 0, 1, 0],
@@ -164,23 +166,29 @@ maze = np.array([
     [0, 1, 0, 0, 0]])
 
 
+maze = generate_maze(21, 21)
+
 maze_width = len(maze[:, 0])
 maze_height = len(maze[0::])
+
+start_case = (maze_height-1, 0)
+end_case = (0, maze_width-1)
 
 actions = ["up", "down", "left", "right"]
 
 Q = np.zeros(shape=(maze.shape[0], maze.shape[1], len(actions)))
 
-N = 500  # Number of games
+N = 1500  # Number of games
 epsilon = lambda x: 1 - 1*(x+2)
 epsilon = lambda x: 0.1
 alpha = 0.8
 gamma = 0.9
 
 for t in range(N):
-    X_s = (4, 0)
+    print(f"entrainement {t}/{N}")
+    X_s = start_case
     s = 0
-    while X_s != (0, 4):
+    while X_s != end_case:
         admissible_actions = get_admissible_actions(X_s)
 
         u = np.random.uniform(0, 1)
