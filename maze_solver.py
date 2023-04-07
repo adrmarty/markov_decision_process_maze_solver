@@ -166,7 +166,7 @@ maze = np.array([
     [0, 1, 0, 0, 0]])
 
 
-maze = generate_maze(101, 101)
+maze = generate_maze(21, 21)
 
 maze_width = len(maze[:, 0])
 maze_height = len(maze[0::])
@@ -178,10 +178,11 @@ actions = ["up", "down", "left", "right"]
 
 Q = np.zeros(shape=(maze.shape[0], maze.shape[1], len(actions)))
 
-N = 3000  # Number of games
+N = 500  # Number of games
 
-epsilon = lambda x: 0.2
 epsilon = lambda x: 1 - 1/(x+2)
+epsilon = lambda x: 0.2
+
 
 alpha = 0.8
 gamma = 0.95
