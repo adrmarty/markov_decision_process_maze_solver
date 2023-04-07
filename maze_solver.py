@@ -8,7 +8,7 @@ from pprint import pprint
 def my_argmax(array):
     """
     Cette fonction est similaire à np.argmax, mais lorsque il y a plusieurs argmax, on en choisi un aléatoirement
-    avec une probabilité uniforme
+    avec une probabilité uniforme.
     """
     return np.random.choice(np.where(array == np.max(array))[0])
 
@@ -149,8 +149,10 @@ def plot_path(maze, Q, max_iteration=200):
 
 def reward(case, action):
     x, y = case
+    if (x, y) == (1, 4 )and action == "up":
+        return 10000
     if maze[x, y] == 1:
-        return -100
+        return -10000
     else:
         return 10
 
@@ -169,9 +171,10 @@ actions = ["up", "down", "left", "right"]
 
 Q = np.zeros(shape=(maze.shape[0], maze.shape[1], len(actions)))
 
-N = 1000  # Number of games
-epsilon = 0.2
-alpha = 0.5
+N = 500  # Number of games
+epsilon = lambda x: 1 - 1*(x+2)
+epsilon = lambda x: 0.1
+alpha = 0.8
 gamma = 0.9
 
 for t in range(N):
@@ -181,7 +184,7 @@ for t in range(N):
         admissible_actions = get_admissible_actions(X_s)
 
         u = np.random.uniform(0, 1)
-        if u <= epsilon:
+        if u <= epsilon(s):
             action = np.random.choice(admissible_actions)
             action_number = actions.index(action)
         else:
@@ -194,7 +197,6 @@ for t in range(N):
         X_splus1 = shift(X_s, action)
         Q[X_s[0], X_s[1], action_number] = (1-alpha)*Q[X_s[0], X_s[1], action_number] + alpha*(
             reward(X_s, action) + gamma*np.max(Q[X_splus1[0], X_splus1[1], :]))
-
         s += 1
         X_s = X_splus1
 
