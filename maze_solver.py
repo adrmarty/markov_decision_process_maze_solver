@@ -5,6 +5,13 @@ from matplotlib import animation
 
 from pprint import pprint
 
+def my_argmax(array):
+    """
+    Cette fonction est similaire à np.argmax, mais lorsque il y a plusieurs argmax, on en choisi un aléatoirement
+    avec une probabilité uniforme
+    """
+    return np.random.choice(np.where(array == np.max(array))[0])
+
 
 def shift(position, action):
     """
@@ -56,7 +63,7 @@ def get_path_from_Q(Q, start, end, max_iteration=100):
     i = 1
     while X != end and i <= max_iteration:
         (x, y) = X
-        action_number = np.argmax(Q[x, y, :])
+        action_number = my_argmax(Q[x, y, :])
         X = shift(X, actions[action_number])
         x_list.append(X[0])
         y_list.append(X[1])
@@ -90,7 +97,7 @@ def plot_maze(maze):
     plt.show()
 
 
-def plot_path(maze, Q, max_iteration=100):
+def plot_path(maze, Q, max_iteration=200):
     """
     Cette fonction permet d'afficher le chemin que l'on obtient en prenant nos décisions à partir de la matrice Q
     """
@@ -134,8 +141,9 @@ def plot_path(maze, Q, max_iteration=100):
     anim = animation.FuncAnimation(fig, animate,
                                    init_func=init,
                                    frames=len(x),
-                                   interval=500,
+                                   interval=100,
                                    blit=True)
+    anim.save("animation.gif")
     plt.show()
 
 
@@ -162,8 +170,8 @@ actions = ["up", "down", "left", "right"]
 Q = np.zeros(shape=(maze.shape[0], maze.shape[1], len(actions)))
 
 N = 1000  # Number of games
-epsilon = 0.5
-alpha = 0.6
+epsilon = 0.2
+alpha = 0.5
 gamma = 0.9
 
 for t in range(N):
@@ -178,7 +186,7 @@ for t in range(N):
             action_number = actions.index(action)
         else:
             admissible_actions_numbers = get_action_numbers(admissible_actions)
-            action_number = np.argmax(
+            action_number = my_argmax(
                 Q[X_s[0], X_s[1], admissible_actions_numbers])
             action = admissible_actions[action_number]
             action_number = actions.index(action)
@@ -190,5 +198,4 @@ for t in range(N):
         s += 1
         X_s = X_splus1
 
-print(Q[0, 0, :])
 plot_path(maze, Q)
