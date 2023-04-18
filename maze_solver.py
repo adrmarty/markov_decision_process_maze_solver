@@ -151,9 +151,9 @@ def plot_path(maze, Q, max_iteration=200):
 def reward(case, action):
     x, y = case
     if maze[x, y] == 1:
-        return -100000
+        return -np.inf
     elif shift(case, action) == end_case:
-        return 10000
+        return 100000
     else:
         return 1
 
@@ -165,7 +165,6 @@ maze = np.array([
     [0, 1, 0, 1, 0],
     [0, 1, 0, 0, 0]])
 
-
 maze = generate_maze(21, 21)
 
 maze_width = len(maze[:, 0])
@@ -176,9 +175,11 @@ end_case = (0, maze_width-1)
 
 actions = ["up", "down", "left", "right"]
 
+# Initialization of the Q matrix
 Q = np.zeros(shape=(maze.shape[0], maze.shape[1], len(actions)))
 
-N = 1000  # Number of games
+# Number of games / training
+N = 1000  
 
 epsilon = lambda x: 1 - 1/(x+2)
 epsilon = lambda x: 0.3

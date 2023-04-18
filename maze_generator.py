@@ -3,6 +3,9 @@ import random
 import matplotlib.pyplot as plt
 
 def generate_maze(MAZE_WIDTH, MAZE_HEIGHT):
+    """
+    Cette fonction permet de générer un tableau à deux dimension représentant un labyrinthe aléatoire.
+    """
 
     # Define constants for the maze cells
     WALL = 1
