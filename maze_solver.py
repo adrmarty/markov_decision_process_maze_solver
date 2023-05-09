@@ -6,6 +6,8 @@ from matplotlib import animation
 from maze_generator import generate_maze
 from pprint import pprint
 
+np.random.seed(10)
+
 def my_argmax(array):
     """
     Cette fonction est similaire à np.argmax, mais lorsque il y a plusieurs argmax, on en choisi un aléatoirement
@@ -27,7 +29,7 @@ def shift(position, action):
         return (y, x-1)
     if action == "right":
         return (y, x+1)
-    
+
 
 def get_admissible_actions(position):
     """
@@ -53,7 +55,7 @@ def get_action_numbers(action_list):
     return [actions.index(action) for action in action_list]
 
 
-def get_path_from_Q(Q, start, end, max_iteration=100):
+def get_path_from_Q(Q, start, end, max_iteration=1000):
     """
     Cette fonction permet de générer les coordonnés d'un trajet calculé à partir de la matrice de décision
     état-action Q
@@ -64,8 +66,11 @@ def get_path_from_Q(Q, start, end, max_iteration=100):
     i = 1
     while X != end and i <= max_iteration:
         (x, y) = X
-        action_number = my_argmax(Q[x, y, :])
-        X = shift(X, actions[action_number])
+        admissible_actions = get_admissible_actions((x, y))
+        admissible_actions_numbers = get_action_numbers(admissible_actions)
+        admissible_action_number = my_argmax(
+            Q[x, y, admissible_actions_numbers])
+        X = shift(X, admissible_actions[admissible_action_number])
         x_list.append(X[0])
         y_list.append(X[1])
         i += 1
@@ -98,10 +103,36 @@ def plot_maze(maze):
     plt.show()
 
 
-def plot_path(maze, Q, max_iteration=200):
+def plot_path(maze, Q, max_iteration=1000, title=""):
     """
     Cette fonction permet d'afficher le chemin que l'on obtient en prenant nos décisions à partir de la matrice Q
     """
+    # Création de la grille
+
+    # Définition des couleurs
+    colors = ['white', 'black', 'red']
+
+    # Affichage de la grille avec les couleurs associées à chaque valeur
+    fig, ax = plt.subplots()
+    grid = np.copy(maze)
+    cmap = plt.cm.colors.ListedColormap(colors)
+
+    y_list, x_list = get_path_from_Q(Q, start_case, end_case, max_iteration=max_iteration)
+    for i in range(len(x_list)):
+        grid[y_list[i], x_list[i]] = 2
+    
+
+    ax.imshow(grid, cmap=cmap, interpolation='nearest')
+    plt.title(title+f"\n Longueur du chemin : {len(x_list)} ")
+    plt.show()
+
+
+def plot_path_animation(maze, Q, max_iteration=1000):
+    """
+    Cette fonction permet d'afficher le chemin que l'on obtient en prenant nos décisions à partir de la matrice Q
+    sous forme d'animation.
+    """
+
     # Define the colors for the maze
     cmap = plt.cm.binary
     cmap.set_bad(color='black')
@@ -120,7 +151,8 @@ def plot_path(maze, Q, max_iteration=200):
     ax.set_yticklabels([])
     ax.tick_params(axis='both', length=0)
 
-    y, x = get_path_from_Q(Q, start_case, end_case, max_iteration=max_iteration)
+    y, x = get_path_from_Q(Q, start_case, end_case,
+                           max_iteration=max_iteration)
 
     x = x-0.5
     y = y-0.5
@@ -155,7 +187,7 @@ def reward(case, action):
     elif shift(case, action) == end_case:
         return 100000
     else:
-        return 1
+        return 0
 
 
 maze = np.array([
@@ -178,11 +210,17 @@ actions = ["up", "down", "left", "right"]
 # Initialization of the Q matrix
 Q = np.zeros(shape=(maze.shape[0], maze.shape[1], len(actions)))
 
-# Number of games / training
-N = 1000  
+Q_HISTORY = {}
+times = []
+path_lenghts = []
 
-epsilon = lambda x: 1 - 1/(x+2)
-epsilon = lambda x: 0.3
+# Number of games / training
+N = 1000
+
+
+def epsilon(x): return 1 - 1/(x+2)
+def epsilon(x): return 0.3
+
 
 alpha = 0.8
 gamma = 0.95
@@ -211,4 +249,34 @@ for t in range(N):
         s += 1
         X_s = X_splus1
 
-plot_path(maze, Q)
+    if t in [0, 10, 50, 100, 150, 200]:
+        Q_HISTORY[t] = np.copy(Q)
+
+    # à partir d'ici, on compte la longueur du chemin obtenu à partir de Q pour visual
+
+    if t >= 1:
+        x_list, y_list = get_path_from_Q(
+            Q, start_case, end_case, max_iteration=10000)
+        times.append(t)
+        path_lenghts.append(len(x_list))
+
+# On affiche la convergence du chemin vers le chemin optimal
+plt.title("Convergence vers le chemin optimal")
+plt.xlabel("Nombre d'entrainements")
+plt.ylabel("Longueur du chemin parcouru")
+plt.plot(times, path_lenghts)
+plt.show()
+
+# On affiche les chemins intermediares parcourus pendant l'entrainement
+for t in Q_HISTORY.keys():
+    title = f"Chemin à partir du {t}ième entrainement"
+    if t == 1:
+        title = "Chemin à partir du premier entrainement"
+    if t == 0:
+        title = "Chemin sans entrainement"
+    plot_path(maze, Q_HISTORY[t], max_iteration=10000, title=title)
+
+# On affiche l'animation du résultat final
+plot_path_animation(maze, Q)
+
+
